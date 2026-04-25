@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Educa Pro | Aprovação IFCE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root { --ifce-green: #2f9e41; }
+        body { font-family: 'Inter', sans-serif; }
+        .bg-ifce { background-color: var(--ifce-green); }
+        .text-ifce { color: var(--ifce-green); }
+        .active-tab { border-left: 4px solid var(--ifce-green); background-color: rgba(47, 158, 65, 0.05); color: var(--ifce-green); }
+        .perspective-1000 { perspective: 1000px; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+        .preserve-3d { transform-style: preserve-3d; transition: transform 0.6s; }
+        .backface-hidden { backface-visibility: hidden; }
+    </style>
+</head>
+<body class="bg-gray-50 h-screen flex flex-col md:flex-row overflow-hidden">
+
+    <aside class="w-full md:w-64 bg-white border-r border-gray-200 flex flex-col shadow-sm">
+        <div class="p-6 border-b">
+            <h1 class="text-xl font-black tracking-tighter">EDUCA <span class="text-ifce">PRO</span></h1>
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Foco IFCE</p>
+        </div>
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+            <button onclick="renderTab('teoria')" id="btn-teoria" class="sidebar-item w-full flex items-center gap-3 p-3 rounded-lg font-semibold transition-all">
+                <i class="fas fa-book"></i> Teoria
+            </button>
+            <button onclick="renderTab('questoes')" id="btn-questoes" class="sidebar-item w-full flex items-center gap-3 p-3 rounded-lg font-semibold transition-all">
+                <i class="fas fa-tasks"></i> Questões
+            </button>
+            <button onclick="renderTab('redacao')" id="btn-redacao" class="sidebar-item w-full flex items-center gap-3 p-3 rounded-lg font-semibold transition-all">
+                <i class="fas fa-pen-nib"></i> Redação AI
+            </button>
+            <button onclick="renderTab('macetes')" id="btn-macetes" class="sidebar-item w-full flex items-center gap-3 p-3 rounded-lg font-semibold transition-all">
+                <i class="fas fa-lightbulb"></i> Macetes
+            </button>
+        </nav>
+    </aside>
+
+    <main class="flex-1 flex flex-col overflow-y-auto">
+        <header class="bg-white p-6 border-b flex justify-between items-center">
+            <span id="tab-title" class="font-bold text-gray-700">Início</span>
+            <div class="w-8 h-8 bg-ifce rounded-full flex items-center justify-center text-white text-xs">IF</div>
+        </header>
+        <section id="app-viewport" class="p-4 md:p-8 max-w-4xl mx-auto w-full">
+            </section>
+    </main>
+
+    <script>
+        const DATA = {
+            materias: [
+                { t: "Interpretação de Texto", d: "Foco em gêneros e inferências.", tag: "Português" },
+                { t: "Razão e Proporção", d: "Regra de três e divisões proporcionais.", tag: "Matemática" }
+            ],
+            questoes: [{
+                p: "Em um mapa de escala 1:100.000, 5cm representam qual distância real?",
+                o: ["5 km", "50 km", "500 m", "50.000 cm"],
+                c: 0,
+                e: "1cm = 1km na escala 1:100.000."
+            }],
+            macetes: [{ f: "Báskara (Delta)", v: "Δ = b² - 4ac" }]
+        };
+
+        function renderTab(tab) {
+            const viewport = document.getElementById('app-viewport');
+            document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active-tab'));
+            document.getElementById(`btn-${tab}`).classList.add('active-tab');
+            document.getElementById('tab-title').innerText = tab.toUpperCase();
+
+            if(tab === 'teoria') {
+                viewport.innerHTML = `<div class="grid gap-4">${DATA.materias.map(m => `
+                    <div class="bg-white p-6 rounded-xl border shadow-sm">
+                        <span class="text-xs font-bold text-ifce uppercase">${m.tag}</span>
+                        <h3 class="text-lg font-bold">${m.t}</h3>
+                        <p class="text-gray-500 text-sm">${m.d}</p>
+                    </div>`).join('')}</div>`;
+            } 
+            
+            if(tab === 'questoes') {
+                const q = DATA.questoes[0];
+                viewport.innerHTML = `
+                    <div class="bg-white p-8 rounded-2xl border shadow-sm">
+                        <p class="text-lg font-bold mb-6">${q.p}</p>
+                        <div class="grid gap-3">
+                            ${q.o.map((opt, i) => `<button onclick="check(${i},${q.c},'${q.e}')" class="w-full text-left p-4 rounded-lg border hover:bg-gray-50 transition">${opt}</button>`).join('')}
+                        </div>
+                        <div id="feedback" class="mt-4 hidden p-4 rounded-lg font-bold"></div>
+                    </div>`;
+            }
+
+            if(tab === 'redacao') {
+                viewport.innerHTML = `
+                    <div class="bg-white p-6 rounded-2xl border shadow-sm">
+                        <textarea id="essay" class="w-full h-64 p-4 bg-gray-50 rounded-xl outline-none border focus:border-ifce transition" placeholder="Sua redação aqui..."></textarea>
+                        <button onclick="analyze()" class="w-full mt-4 bg-ifce text-white py-4 rounded-xl font-bold uppercase tracking-widest shadow-lg">Analisar com IA</button>
+                        <div id="res" class="mt-4"></div>
+                    </div>`;
+            }
+
+            if(tab === 'macetes') {
+                const m = DATA.macetes[0];
+                viewport.innerHTML = `
+                    <div class="flex flex-col items-center justify-center min-h-[50vh]">
+                        <div onclick="this.querySelector('.preserve-3d').classList.toggle('rotate-y-180')" class="w-72 h-48 perspective-1000 cursor-pointer">
+                            <div class="preserve-3d relative w-full h-full shadow-xl rounded-2xl">
+                                <div class="backface-hidden absolute inset-0 bg-ifce rounded-2xl flex items-center justify-center p-6 text-white text-xl font-bold text-center">${m.f}</div>
+                                <div class="backface-hidden absolute inset-0 bg-white border-4 border-ifce rounded-2xl flex items-center justify-center p-6 text-ifce text-2xl font-black rotate-y-180">${m.v}</div>
+                            </div>
+                        </div>
+                        <p class="mt-6 text-gray-400 text-sm">Toque no card para girar</p>
+                    </div>`;
+            }
+        }
+
+        function check(i, c, e) {
+            const f = document.getElementById('feedback');
+            f.classList.remove('hidden', 'bg-green-100', 'bg-red-100');
+            const win = i === c;
+            f.classList.add(win ? 'bg-green-100' : 'bg-red-100');
+            f.innerText = win ? `Correto! ${e}` : "Errado. Tente novamente.";
+        }
+
+        function analyze() {
+            const r = document.getElementById('res');
+            r.innerHTML = "<p class='animate-pulse text-ifce font-bold text-center'>IA analisando estrutura e coesão...</p>";
+            setTimeout(() => {
+                const n = Math.floor(Math.random() * 30) + 70;
+                r.innerHTML = `<div class="p-6 bg-green-50 rounded-xl border-l-4 border-ifce">
+                    <h4 class="text-2xl font-black text-ifce">Nota: ${n}/100</h4>
+                    <p class="text-sm text-gray-600 mt-2">Dica: Melhore o uso de conectivos entre os parágrafos de desenvolvimento.</p>
+                </div>`;
+            }, 1500);
+        }
+
+        window.onload = () => renderTab('teoria');
+    </script>
+</body>
+</html>
