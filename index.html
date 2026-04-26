@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Educa Pro | Professor Átomo</title>
+    <title>Educa Pro | Trilhas de Estudo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -12,58 +12,39 @@
         .text-ifce { color: var(--ifce); }
         .active-tab { border-bottom: 4px solid var(--ifce); color: var(--ifce); background: #f0fdf4; }
 
-        /* --- ANIMAÇÃO 3D DO ÁTOMO (MELHORADA) --- */
-        .atom-wrapper {
-            width: 60px; height: 60px; position: relative; 
-            perspective: 800px; display: flex; align-items: center; justify-content: center;
-        }
-        .nucleus {
-            width: 14px; height: 14px; background: radial-gradient(circle, #ff6b6b, #cc0000);
-            border-radius: 50%; position: absolute;
-            box-shadow: 0 0 15px #ff4d4d; z-index: 10;
-        }
-        .orbit {
-            position: absolute; width: 100%; height: 100%;
-            border: 1.5px solid rgba(255, 255, 255, 0.4); border-radius: 50%;
-            transform-style: preserve-3d; animation: rotate-orbit 3s linear infinite;
-        }
+        /* ÁTOMO 3D DINÂMICO */
+        .atom-wrapper { width: 50px; height: 50px; position: relative; perspective: 800px; display: flex; align-items: center; justify-content: center; }
+        .nucleus { width: 12px; height: 12px; background: radial-gradient(circle, #ff6b6b, #cc0000); border-radius: 50%; position: absolute; box-shadow: 0 0 15px #ff4d4d; z-index: 10; }
+        .orbit { position: absolute; width: 100%; height: 100%; border: 1.5px solid rgba(47, 158, 65, 0.4); border-radius: 50%; transform-style: preserve-3d; animation: rotate-orbit 3s linear infinite; }
         .orbit:nth-child(2) { transform: rotateX(70deg) rotateY(20deg); animation-duration: 2.5s; }
         .orbit:nth-child(3) { transform: rotateX(-70deg) rotateY(20deg); animation-duration: 4s; }
-        
-        .electron {
-            width: 6px; height: 6px; background: #fff; border-radius: 50%;
-            position: absolute; top: 50%; box-shadow: 0 0 8px #fff;
-        }
+        .electron { width: 5px; height: 5px; background: var(--ifce); border-radius: 50%; position: absolute; top: 50%; box-shadow: 0 0 8px var(--ifce); }
+        @keyframes rotate-orbit { from { transform: rotateX(70deg) rotateZ(0deg); } to { transform: rotateX(70deg) rotateZ(360deg); } }
 
-        @keyframes rotate-orbit {
-            from { transform: rotateX(70deg) rotateZ(0deg); }
-            to { transform: rotateX(70deg) rotateZ(360deg); }
-        }
-
-        /* Estilo do Chat */
-        #chat-box::-webkit-scrollbar { width: 4px; }
-        #chat-box::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        /* Animação suave para a trilha */
+        .trilha-card { animation: slideUp 0.4s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="bg-slate-50 h-screen flex flex-col overflow-hidden font-sans">
+<body class="bg-slate-50 h-screen flex flex-col overflow-hidden">
 
-    <header class="bg-white p-4 border-b shadow-sm flex flex-col items-center">
-        <h1 class="text-xl font-black italic text-gray-800 tracking-tighter">EDUCA <span class="text-ifce">PRO</span></h1>
+    <header class="bg-white p-4 border-b text-center">
+        <h1 class="text-xl font-black italic tracking-tighter">EDUCA <span class="text-ifce">PRO</span></h1>
     </header>
 
     <nav class="bg-white border-b flex justify-around sticky top-0 z-30">
-        <button onclick="renderTab('ia')" id="btn-ia" class="sidebar-item flex-1 py-4 flex flex-col items-center gap-1 font-bold text-[10px] uppercase transition-all">
+        <button onclick="renderTab('ia')" id="btn-ia" class="sidebar-item flex-1 py-4 flex flex-col items-center gap-1 font-bold text-[10px] uppercase">
             <i class="fas fa-atom text-lg"></i> IA Átomo
         </button>
-        <button onclick="renderTab('edital')" id="btn-edital" class="sidebar-item flex-1 py-4 flex flex-col items-center gap-1 font-bold text-[10px] uppercase transition-all">
-            <i class="fas fa-list-check text-lg"></i> Edital
+        <button onclick="renderTab('edital')" id="btn-edital" class="sidebar-item flex-1 py-4 flex flex-col items-center gap-1 font-bold text-[10px] uppercase">
+            <i class="fas fa-route text-lg"></i> Trilhas
         </button>
-        <button onclick="renderTab('calc')" id="btn-calc" class="sidebar-item flex-1 py-4 flex flex-col items-center gap-1 font-bold text-[10px] uppercase transition-all">
+        <button onclick="renderTab('calc')" id="btn-calc" class="sidebar-item flex-1 py-4 flex flex-col items-center gap-1 font-bold text-[10px] uppercase">
             <i class="fas fa-calculator text-lg"></i> Notas
         </button>
     </nav>
 
-    <main class="flex-1 overflow-hidden relative flex flex-col">
+    <main class="flex-1 overflow-hidden flex flex-col">
         <div id="app-viewport" class="flex-1 overflow-y-auto p-4 max-w-2xl mx-auto w-full h-full"></div>
     </main>
 
@@ -71,7 +52,7 @@
         const API_KEY = "Gsk_F4poWgDj2lue56bdS5JvWGdyb3FY7mPqIy0tOeBgdilDA9h3RC8b";
         
         const EDITAL_AREAS = {
-            "Língua Portuguesa": ["Interpretação de Texto", "Acentuação", "Sintaxe", "Concordância"],
+            "Língua Portuguesa": ["Interpretação de Texto", "Ortografia", "Sintaxe", "Concordância"],
             "Matemática": ["Razão e Proporção", "Equações", "Geometria Plana", "Porcentagem"]
         };
 
@@ -83,77 +64,107 @@
             document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active-tab'));
             document.getElementById(`btn-${tab}`).classList.add('active-tab');
 
+            if(tab === 'edital') {
+                v.innerHTML = `
+                <div class="space-y-6">
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border">
+                        <h2 class="font-black text-ifce mb-2">TRILHA DE APRENDIZAGEM</h2>
+                        <p class="text-[10px] text-gray-400 font-bold uppercase mb-6">Selecione um tema para ver os passos de estudo</p>
+                        
+                        ${Object.keys(EDITAL_AREAS).map(area => `
+                            <div class="mb-6">
+                                <h3 class="text-[11px] font-black text-gray-500 mb-3 border-b pb-1 uppercase">${area}</h3>
+                                <div class="grid gap-2">
+                                    ${EDITAL_AREAS[area].map(item => `
+                                        <div onclick="abrirTrilha('${item}')" class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-gray-100 cursor-pointer active:scale-95 transition-all">
+                                            <div class="flex items-center gap-3">
+                                                <input type="checkbox" onclick="event.stopPropagation(); toggleItem('${item}', this.checked)" ${progresso[item]?'checked':''} class="w-5 h-5 accent-green-600">
+                                                <span class="text-sm font-bold text-gray-700">${item}</span>
+                                            </div>
+                                            <i class="fas fa-chevron-right text-gray-300"></i>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div id="trilha-detalhe"></div>
+                </div>`;
+            }
+
             if(tab === 'ia') {
                 v.innerHTML = `
                 <div class="flex flex-col h-full space-y-4">
-                    <div class="bg-ifce p-5 rounded-3xl text-white flex items-center gap-4 shadow-lg shadow-green-200">
-                        <div class="atom-wrapper">
-                            <div class="nucleus"></div>
-                            <div class="orbit"><div class="electron"></div></div>
-                            <div class="orbit"><div class="electron"></div></div>
-                        </div>
+                    <div class="bg-ifce p-5 rounded-3xl text-white flex items-center gap-4 shadow-lg">
+                        <div class="atom-wrapper"><div class="nucleus"></div><div class="orbit"><div class="electron"></div></div><div class="orbit"><div class="electron"></div></div></div>
                         <div>
                             <h2 class="font-black text-lg leading-none">Professor Átomo</h2>
-                            <p class="text-[9px] font-bold opacity-80 uppercase mt-1 tracking-widest">Memória Ativa • Groq LPU</p>
+                            <p class="text-[9px] font-bold opacity-80 uppercase mt-1">Histórico Ativado</p>
                         </div>
                     </div>
-
                     <div class="flex-1 flex flex-col bg-white rounded-3xl shadow-sm border overflow-hidden min-h-[400px]">
-                        <div id="chat-box" class="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-50/50"></div>
+                        <div id="chat-box" class="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-50/50 text-sm"></div>
                         <div class="p-3 bg-white border-t flex gap-2">
-                            <input id="user-input" type="text" class="flex-1 p-4 bg-gray-100 rounded-2xl outline-none text-sm" placeholder="Perqunte sobre o IFCE...">
-                            <button onclick="askAI()" class="bg-ifce text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-md active:scale-90 transition-all">
-                                <i class="fas fa-paper-plane"></i>
-                            </button>
+                            <input id="user-input" type="text" class="flex-1 p-4 bg-gray-100 rounded-2xl outline-none" placeholder="Tire sua dúvida...">
+                            <button onclick="askAI()" class="bg-ifce text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-md"><i class="fas fa-paper-plane"></i></button>
                         </div>
                     </div>
                 </div>`;
                 loadChat();
             }
-
-            if(tab === 'edital') {
-                v.innerHTML = `<div class="bg-white p-6 rounded-3xl shadow-sm border">
-                    <h2 class="font-black text-ifce mb-6 underline decoration-2 offset-4">TRILHA DE ESTUDOS</h2>
-                    ${Object.keys(EDITAL_AREAS).map(area => `
-                        <div class="mb-6">
-                            <h3 class="text-[10px] font-black text-gray-400 mb-3 uppercase tracking-widest">${area}</h3>
-                            <div class="space-y-2">
-                                ${EDITAL_AREAS[area].map(item => `
-                                    <label class="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-gray-100">
-                                        <input type="checkbox" onchange="toggleItem('${item}', this.checked)" ${progresso[item]?'checked':''} class="w-5 h-5 accent-green-600">
-                                        <span class="text-sm font-bold text-gray-600">${item}</span>
-                                    </label>
-                                `).join('')}
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>`;
-            }
-
+            
             if(tab === 'calc') {
-                v.innerHTML = `
-                <div class="bg-white p-8 rounded-3xl shadow-sm border text-center">
-                    <h2 class="font-black text-gray-700 mb-6 uppercase tracking-tighter">Simulador de Média</h2>
-                    <input id="p" type="number" placeholder="Acertos Português" class="w-full p-4 mb-3 bg-slate-50 rounded-2xl border text-center font-bold">
-                    <input id="m" type="number" placeholder="Acertos Matemática" class="w-full p-4 mb-6 bg-slate-50 rounded-2xl border text-center font-bold">
-                    <button onclick="calc()" class="w-full bg-ifce text-white py-4 rounded-2xl font-black shadow-lg">CALCULAR RESULTADO</button>
+                v.innerHTML = `<div class="bg-white p-8 rounded-3xl shadow-sm border text-center">
+                    <h2 class="font-black text-gray-700 mb-6 uppercase">Simulador de Média</h2>
+                    <input id="p" type="number" placeholder="Português" class="w-full p-4 mb-3 bg-slate-50 rounded-2xl border text-center font-bold">
+                    <input id="m" type="number" placeholder="Matemática" class="w-full p-4 mb-6 bg-slate-50 rounded-2xl border text-center font-bold">
+                    <button onclick="calc()" class="w-full bg-ifce text-white py-4 rounded-2xl font-black shadow-lg">CALCULAR</button>
                     <div id="res" class="mt-6 text-6xl font-black text-ifce">--</div>
                 </div>`;
             }
         }
 
+        function abrirTrilha(item) {
+            const detalhe = document.getElementById('trilha-detalhe');
+            detalhe.scrollIntoView({behavior: 'smooth'});
+            detalhe.innerHTML = `
+                <div class="bg-white p-6 rounded-3xl border-2 border-ifce trilha-card shadow-xl">
+                    <h3 class="font-black text-gray-800 mb-4 uppercase text-sm">Roteiro: ${item}</h3>
+                    <div class="space-y-3">
+                        <div class="p-3 bg-green-50 rounded-xl border border-green-100">
+                            <b class="text-ifce text-[10px] uppercase">1. Teoria</b>
+                            <p class="text-xs text-gray-600 mt-1">Assista a uma aula de base e faça um mapa mental dos conceitos principais.</p>
+                        </div>
+                        <div class="p-3 bg-blue-50 rounded-xl border border-blue-100">
+                            <b class="text-blue-600 text-[10px] uppercase">2. Prática</b>
+                            <p class="text-xs text-gray-600 mt-1">Resolva 10 questões do IFCE sobre este tema e analise os erros.</p>
+                        </div>
+                        <div class="p-3 bg-orange-50 rounded-xl border border-orange-100">
+                            <b class="text-orange-600 text-[10px] uppercase">3. Reforço</b>
+                            <p class="text-xs text-gray-600 mt-1">Explique o assunto em voz alta para o Professor Átomo para validar seu conhecimento.</p>
+                        </div>
+                    </div>
+                    <button onclick="enviarParaIA('${item}')" class="w-full mt-4 bg-gray-800 text-white p-3 rounded-xl font-bold text-[10px] uppercase">Dúvida Rápida com Átomo</button>
+                </div>`;
+        }
+
+        function enviarParaIA(item) {
+            const msg = `Professor Átomo, pode me dar um resumo bem didático sobre ${item} focado no IFCE?`;
+            renderTab('ia');
+            document.getElementById('user-input').value = msg;
+        }
+
         function loadChat() {
             const box = document.getElementById('chat-box');
             if(!box) return;
-            box.innerHTML = chatHistory.length === 0 ? '<p class="text-center text-gray-300 text-[10px] mt-10">HISTÓRICO VAZIO</p>' : '';
+            box.innerHTML = chatHistory.length === 0 ? '<p class="text-center text-gray-300 text-[10px] mt-10">SEM MENSAGENS</p>' : '';
             chatHistory.forEach(msg => {
                 const isUser = msg.role === 'user';
-                box.innerHTML += `
-                    <div class="flex ${isUser ? 'justify-end' : 'justify-start'}">
-                        <div class="${isUser ? 'bg-ifce text-white rounded-br-none' : 'bg-white border-l-4 border-ifce rounded-tl-none'} p-4 rounded-2xl shadow-sm max-w-[90%] text-sm font-medium">
-                            ${msg.content}
-                        </div>
-                    </div>`;
+                box.innerHTML += `<div class="flex ${isUser ? 'justify-end' : 'justify-start'}">
+                    <div class="${isUser ? 'bg-ifce text-white rounded-br-none' : 'bg-white border-l-4 border-ifce rounded-tl-none'} p-4 rounded-2xl shadow-sm max-w-[90%] text-sm font-medium">
+                        ${msg.content}
+                    </div>
+                </div>`;
             });
             box.scrollTop = box.scrollHeight;
         }
@@ -161,7 +172,6 @@
         async function askAI() {
             const input = document.getElementById('user-input');
             const q = input.value.trim(); if(!q) return;
-
             chatHistory.push({ role: 'user', content: q });
             input.value = ""; loadChat();
 
@@ -174,16 +184,13 @@
                 const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                     method: "POST",
                     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${API_KEY}` },
-                    body: JSON.stringify({ 
-                        model: "llama3-8b-8192", 
-                        messages: [{role: "system", content: "Você é o Professor Átomo, especialista em IFCE."}, ...chatHistory.slice(-4)] 
-                    })
+                    body: JSON.stringify({ model: "llama3-8b-8192", messages: [{role: "system", content: "Professor Átomo, tutor de IFCE."}, ...chatHistory.slice(-4)] })
                 });
                 const data = await res.json();
                 chatHistory.push({ role: 'assistant', content: data.choices[0].message.content });
                 localStorage.setItem('educapro_chat', JSON.stringify(chatHistory));
                 loadChat();
-            } catch(e) { load.innerText = "Erro de conexão. Suba para o GitHub Pages."; }
+            } catch(e) { load.innerText = "Erro: Suba para o GitHub Pages."; }
         }
 
         function toggleItem(item, status) {
