@@ -3,142 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Educa Pro | IFCE Full</title>
+    <title>Educa Pro | Professor Átomo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root { --ifce: #2f9e41; }
         .bg-ifce { background-color: var(--ifce); }
         .text-ifce { color: var(--ifce); }
-        .active-tab { border-left: 4px solid var(--ifce); background: #f0fdf4; color: var(--ifce); }
+        .active-tab { border-bottom: 4px solid var(--ifce); color: var(--ifce); background: #f0fdf4; }
+
+        /* --- ANIMAÇÃO 3D DO ÁTOMO (MELHORADA) --- */
+        .atom-wrapper {
+            width: 60px; height: 60px; position: relative; 
+            perspective: 800px; display: flex; align-items: center; justify-content: center;
+        }
+        .nucleus {
+            width: 14px; height: 14px; background: radial-gradient(circle, #ff6b6b, #cc0000);
+            border-radius: 50%; position: absolute;
+            box-shadow: 0 0 15px #ff4d4d; z-index: 10;
+        }
+        .orbit {
+            position: absolute; width: 100%; height: 100%;
+            border: 1.5px solid rgba(255, 255, 255, 0.4); border-radius: 50%;
+            transform-style: preserve-3d; animation: rotate-orbit 3s linear infinite;
+        }
+        .orbit:nth-child(2) { transform: rotateX(70deg) rotateY(20deg); animation-duration: 2.5s; }
+        .orbit:nth-child(3) { transform: rotateX(-70deg) rotateY(20deg); animation-duration: 4s; }
+        
+        .electron {
+            width: 6px; height: 6px; background: #fff; border-radius: 50%;
+            position: absolute; top: 50%; box-shadow: 0 0 8px #fff;
+        }
+
+        @keyframes rotate-orbit {
+            from { transform: rotateX(70deg) rotateZ(0deg); }
+            to { transform: rotateX(70deg) rotateZ(360deg); }
+        }
+
+        /* Estilo do Chat */
+        #chat-box::-webkit-scrollbar { width: 4px; }
+        #chat-box::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-gray-50 h-screen flex flex-col md:flex-row overflow-hidden">
+<body class="bg-slate-50 h-screen flex flex-col overflow-hidden font-sans">
 
-    <aside class="w-full md:w-64 bg-white border-r border-gray-200 flex flex-col shadow-lg z-10">
-        <div class="p-6 border-b text-center md:text-left">
-            <h1 class="text-xl font-black">EDUCA <span class="text-ifce">PRO</span></h1>
-            <div id="overall-progress" class="text-[10px] bg-gray-100 rounded-full mt-2 h-2 overflow-hidden">
-                <div id="progress-bar" class="bg-ifce h-full" style="width: 0%"></div>
-            </div>
-        </div>
-        <nav class="flex-1 p-4 space-y-2 overflow-y-auto flex md:block">
-            <button onclick="renderTab('edital')" id="btn-edital" class="sidebar-item w-full flex items-center gap-3 p-3 rounded-lg font-bold"><i class="fas fa-list-check"></i> Edital</button>
-            <button onclick="renderTab('redacao')" id="btn-redacao" class="sidebar-item w-full flex items-center gap-3 p-3 rounded-lg font-bold"><i class="fas fa-pen-fancy"></i> Redação</button>
-            <button onclick="renderTab('calc')" id="btn-calc" class="sidebar-item w-full flex items-center gap-3 p-3 rounded-lg font-bold"><i class="fas fa-calculator"></i> Notas</button>
-            <button onclick="renderTab('macetes')" id="btn-macetes" class="sidebar-item w-full flex items-center gap-3 p-3 rounded-lg font-bold"><i class="fas fa-bolt"></i> Macetes</button>
-        </nav>
-    </aside>
+    <header class="bg-white p-4 border-b shadow-sm flex flex-col items-center">
+        <h1 class="text-xl font-black italic text-gray-800 tracking-tighter">EDUCA <span class="text-ifce">PRO</span></h1>
+    </header>
 
-    <main class="flex-1 flex flex-col overflow-y-auto">
-        <header class="bg-white p-4 border-b flex justify-between items-center shadow-sm">
-            <span id="tab-title" class="font-black text-gray-600 uppercase tracking-widest">Dashboard</span>
-            <div id="timer-display" class="hidden font-mono bg-red-100 text-red-600 px-3 py-1 rounded-lg font-bold animate-pulse">00:00</div>
-        </header>
-        
-        <section id="app-viewport" class="p-4 md:p-8 max-w-4xl mx-auto w-full"></section>
+    <nav class="bg-white border-b flex justify-around sticky top-0 z-30">
+        <button onclick="renderTab('ia')" id="btn-ia" class="sidebar-item flex-1 py-4 flex flex-col items-center gap-1 font-bold text-[10px] uppercase transition-all">
+            <i class="fas fa-atom text-lg"></i> IA Átomo
+        </button>
+        <button onclick="renderTab('edital')" id="btn-edital" class="sidebar-item flex-1 py-4 flex flex-col items-center gap-1 font-bold text-[10px] uppercase transition-all">
+            <i class="fas fa-list-check text-lg"></i> Edital
+        </button>
+        <button onclick="renderTab('calc')" id="btn-calc" class="sidebar-item flex-1 py-4 flex flex-col items-center gap-1 font-bold text-[10px] uppercase transition-all">
+            <i class="fas fa-calculator text-lg"></i> Notas
+        </button>
+    </nav>
+
+    <main class="flex-1 overflow-hidden relative flex flex-col">
+        <div id="app-viewport" class="flex-1 overflow-y-auto p-4 max-w-2xl mx-auto w-full h-full"></div>
     </main>
 
     <script>
-        // Banco de Dados e Estado Local
-        const EDITAL_DATA = [
-            "Interpretação de Texto", "Acentuação e Ortografia", "Concordância Verbal",
-            "Razão e Proporção", "Equações de 1º e 2º grau", "Geometria Básica"
-        ];
-        let progresso = JSON.parse(localStorage.getItem('progresso_ifce')) || {};
-        let tempoRestante = 3600; // 60 minutos
-        let interval;
+        const API_KEY = "Gsk_F4poWgDj2lue56bdS5JvWGdyb3FY7mPqIy0tOeBgdilDA9h3RC8b";
+        
+        const EDITAL_AREAS = {
+            "Língua Portuguesa": ["Interpretação de Texto", "Acentuação", "Sintaxe", "Concordância"],
+            "Matemática": ["Razão e Proporção", "Equações", "Geometria Plana", "Porcentagem"]
+        };
 
-        function save() { 
-            localStorage.setItem('progresso_ifce', JSON.stringify(progresso));
-            updateGlobalProgress();
-        }
-
-        function updateGlobalProgress() {
-            const total = EDITAL_DATA.length;
-            const concluido = Object.values(progresso).filter(v => v).length;
-            document.getElementById('progress-bar').style.width = `${(concluido/total)*100}%`;
-        }
+        let progresso = JSON.parse(localStorage.getItem('educapro_checklist')) || {};
+        let chatHistory = JSON.parse(localStorage.getItem('educapro_chat')) || [];
 
         function renderTab(tab) {
             const v = document.getElementById('app-viewport');
-            const title = document.getElementById('tab-title');
             document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active-tab'));
             document.getElementById(`btn-${tab}`).classList.add('active-tab');
-            title.innerText = tab;
-            clearInterval(interval);
-            document.getElementById('timer-display').classList.add('hidden');
 
-            if(tab === 'edital') {
+            if(tab === 'ia') {
                 v.innerHTML = `
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border">
-                        <h2 class="font-bold mb-4">Progresso do Edital Oficial</h2>
-                        <div class="space-y-3">
-                            ${EDITAL_DATA.map((item, i) => `
-                                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border">
-                                    <input type="checkbox" onchange="progresso['${item}']=this.checked; save()" 
-                                    ${progresso[item] ? 'checked' : ''} class="w-5 h-5 accent-green-600">
-                                    <span class="text-sm font-semibold">${item}</span>
-                                </div>
-                            `).join('')}
+                <div class="flex flex-col h-full space-y-4">
+                    <div class="bg-ifce p-5 rounded-3xl text-white flex items-center gap-4 shadow-lg shadow-green-200">
+                        <div class="atom-wrapper">
+                            <div class="nucleus"></div>
+                            <div class="orbit"><div class="electron"></div></div>
+                            <div class="orbit"><div class="electron"></div></div>
                         </div>
-                    </div>`;
+                        <div>
+                            <h2 class="font-black text-lg leading-none">Professor Átomo</h2>
+                            <p class="text-[9px] font-bold opacity-80 uppercase mt-1 tracking-widest">Memória Ativa • Groq LPU</p>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 flex flex-col bg-white rounded-3xl shadow-sm border overflow-hidden min-h-[400px]">
+                        <div id="chat-box" class="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-50/50"></div>
+                        <div class="p-3 bg-white border-t flex gap-2">
+                            <input id="user-input" type="text" class="flex-1 p-4 bg-gray-100 rounded-2xl outline-none text-sm" placeholder="Perqunte sobre o IFCE...">
+                            <button onclick="askAI()" class="bg-ifce text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-md active:scale-90 transition-all">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+                loadChat();
             }
 
-            if(tab === 'redacao') {
-                document.getElementById('timer-display').classList.remove('hidden');
-                startTimer();
-                v.innerHTML = `
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border text-center">
-                        <h2 class="font-bold mb-2">Simulador de Redação IFCE</h2>
-                        <p class="text-xs text-gray-400 mb-4 font-bold uppercase tracking-tighter">O tempo está correndo!</p>
-                        <textarea class="w-full h-80 p-4 bg-gray-50 border rounded-xl focus:ring-2 ring-green-500 outline-none" placeholder="Escreva seu texto aqui..."></textarea>
-                        <button class="w-full mt-4 bg-ifce text-white py-4 rounded-xl font-bold shadow-lg">FINALIZAR E ANALISAR</button>
-                    </div>`;
+            if(tab === 'edital') {
+                v.innerHTML = `<div class="bg-white p-6 rounded-3xl shadow-sm border">
+                    <h2 class="font-black text-ifce mb-6 underline decoration-2 offset-4">TRILHA DE ESTUDOS</h2>
+                    ${Object.keys(EDITAL_AREAS).map(area => `
+                        <div class="mb-6">
+                            <h3 class="text-[10px] font-black text-gray-400 mb-3 uppercase tracking-widest">${area}</h3>
+                            <div class="space-y-2">
+                                ${EDITAL_AREAS[area].map(item => `
+                                    <label class="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-gray-100">
+                                        <input type="checkbox" onchange="toggleItem('${item}', this.checked)" ${progresso[item]?'checked':''} class="w-5 h-5 accent-green-600">
+                                        <span class="text-sm font-bold text-gray-600">${item}</span>
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>`;
             }
 
             if(tab === 'calc') {
                 v.innerHTML = `
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border">
-                        <h2 class="font-bold mb-4">Simulador de Nota Final</h2>
-                        <div class="space-y-4">
-                            <div><label class="text-xs font-bold">ACERTOS PORTUGUÊS (PESO 2)</label>
-                            <input id="p" type="number" class="w-full p-3 bg-gray-100 rounded-lg border focus:outline-ifce" placeholder="0 a 20"></div>
-                            <div><label class="text-xs font-bold">ACERTOS MATEMÁTICA (PESO 3)</label>
-                            <input id="m" type="number" class="w-full p-3 bg-gray-100 rounded-lg border focus:outline-ifce" placeholder="0 a 20"></div>
-                            <button onclick="calc()" class="w-full bg-ifce text-white py-4 rounded-xl font-bold">CALCULAR MÉDIA</button>
-                            <div id="res-calc" class="text-center font-black text-3xl text-ifce"></div>
-                        </div>
-                    </div>`;
-            }
-
-            if(tab === 'macetes') {
-                v.innerHTML = `<div class="grid gap-4">
-                    <div class="bg-gradient-to-br from-green-500 to-green-700 p-6 rounded-2xl text-white shadow-lg">
-                        <span class="text-[10px] font-bold opacity-75">MACETE #01</span>
-                        <h3 class="text-xl font-bold mt-1">Fórmula de Báskara</h3>
-                        <p class="text-2xl mt-4 font-mono">Δ = b² - 4ac</p>
-                    </div>
+                <div class="bg-white p-8 rounded-3xl shadow-sm border text-center">
+                    <h2 class="font-black text-gray-700 mb-6 uppercase tracking-tighter">Simulador de Média</h2>
+                    <input id="p" type="number" placeholder="Acertos Português" class="w-full p-4 mb-3 bg-slate-50 rounded-2xl border text-center font-bold">
+                    <input id="m" type="number" placeholder="Acertos Matemática" class="w-full p-4 mb-6 bg-slate-50 rounded-2xl border text-center font-bold">
+                    <button onclick="calc()" class="w-full bg-ifce text-white py-4 rounded-2xl font-black shadow-lg">CALCULAR RESULTADO</button>
+                    <div id="res" class="mt-6 text-6xl font-black text-ifce">--</div>
                 </div>`;
             }
         }
 
-        function startTimer() {
-            interval = setInterval(() => {
-                tempoRestante--;
-                let min = Math.floor(tempoRestante / 60);
-                let sec = tempoRestante % 60;
-                document.getElementById('timer-display').innerText = `${min}:${sec < 10 ? '0' : ''}${sec}`;
-            }, 1000);
+        function loadChat() {
+            const box = document.getElementById('chat-box');
+            if(!box) return;
+            box.innerHTML = chatHistory.length === 0 ? '<p class="text-center text-gray-300 text-[10px] mt-10">HISTÓRICO VAZIO</p>' : '';
+            chatHistory.forEach(msg => {
+                const isUser = msg.role === 'user';
+                box.innerHTML += `
+                    <div class="flex ${isUser ? 'justify-end' : 'justify-start'}">
+                        <div class="${isUser ? 'bg-ifce text-white rounded-br-none' : 'bg-white border-l-4 border-ifce rounded-tl-none'} p-4 rounded-2xl shadow-sm max-w-[90%] text-sm font-medium">
+                            ${msg.content}
+                        </div>
+                    </div>`;
+            });
+            box.scrollTop = box.scrollHeight;
+        }
+
+        async function askAI() {
+            const input = document.getElementById('user-input');
+            const q = input.value.trim(); if(!q) return;
+
+            chatHistory.push({ role: 'user', content: q });
+            input.value = ""; loadChat();
+
+            const load = document.createElement('div');
+            load.className = "bg-white p-4 rounded-2xl border animate-pulse text-[10px] font-black text-gray-400";
+            load.innerText = "ÁTOMO PROCESSANDO...";
+            document.getElementById('chat-box').appendChild(load);
+
+            try {
+                const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${API_KEY}` },
+                    body: JSON.stringify({ 
+                        model: "llama3-8b-8192", 
+                        messages: [{role: "system", content: "Você é o Professor Átomo, especialista em IFCE."}, ...chatHistory.slice(-4)] 
+                    })
+                });
+                const data = await res.json();
+                chatHistory.push({ role: 'assistant', content: data.choices[0].message.content });
+                localStorage.setItem('educapro_chat', JSON.stringify(chatHistory));
+                loadChat();
+            } catch(e) { load.innerText = "Erro de conexão. Suba para o GitHub Pages."; }
+        }
+
+        function toggleItem(item, status) {
+            progresso[item] = status;
+            localStorage.setItem('educapro_checklist', JSON.stringify(progresso));
         }
 
         function calc() {
-            const p = document.getElementById('p').value * 2;
-            const m = document.getElementById('m').value * 3;
-            document.getElementById('res-calc').innerText = ((p + m) / 5).toFixed(2);
+            const p = Number(document.getElementById('p').value) * 2;
+            const m = Number(document.getElementById('m').value) * 3;
+            document.getElementById('res').innerText = ((p + m) / 5).toFixed(2);
         }
 
-        window.onload = () => { renderTab('edital'); updateGlobalProgress(); };
+        window.onload = () => { renderTab('ia'); };
     </script>
 </body>
 </html>
