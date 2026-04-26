@@ -169,29 +169,51 @@
             box.scrollTop = box.scrollHeight;
         }
 
-        async function askAI() {
-            const input = document.getElementById('user-input');
-            const q = input.value.trim(); if(!q) return;
-            chatHistory.push({ role: 'user', content: q });
-            input.value = ""; loadChat();
+async function askAI() {
+    const input = document.getElementById('user-input');
+    const q = input.value.trim(); 
+    if(!q) return;
 
-            const load = document.createElement('div');
-            load.className = "bg-white p-4 rounded-2xl border animate-pulse text-[10px] font-black text-gray-400";
-            load.innerText = "ÁTOMO PROCESSANDO...";
-            document.getElementById('chat-box').appendChild(load);
+    chatHistory.push({ role: 'user', content: q });
+    input.value = ""; 
+    loadChat();
 
-            try {
-                const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${API_KEY}` },
-                    body: JSON.stringify({ model: "llama3-8b-8192", messages: [{role: "system", content: "Professor Átomo, tutor de IFCE."}, ...chatHistory.slice(-4)] })
-                });
-                const data = await res.json();
-                chatHistory.push({ role: 'assistant', content: data.choices[0].message.content });
-                localStorage.setItem('educapro_chat', JSON.stringify(chatHistory));
-                loadChat();
-            } catch(e) { load.innerText = "Erro: Suba para o GitHub Pages."; }
-        }
+    const box = document.getElementById('chat-box');
+    const load = document.createElement('div');
+    load.className = "bg-white p-4 rounded-2xl border animate-pulse text-[10px] font-black text-gray-400";
+    load.innerText = "ÁTOMO PROCESSANDO...";
+    box.appendChild(load);
+    box.scrollTop = box.scrollHeight;
+
+    try {
+        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json", 
+                "Authorization": "Bearer Gsk_F4poWgDj2lue56bdS5JvWGdyb3FY7mPqIy0tOeBgdilDA9h3RC8b" 
+            },
+            body: JSON.stringify({ 
+                model: "llama3-8b-8192", 
+                messages: [
+                    {role: "system", content: "Você é o Professor Átomo, tutor especializado no IFCE. Responda de forma didática."}, 
+                    ...chatHistory.slice(-4)
+                ] 
+            })
+        });
+
+        if (!res.ok) throw new Error("Erro na API");
+
+        const data = await res.json();
+        load.remove();
+        chatHistory.push({ role: 'assistant', content: data.choices[0].message.content });
+        localStorage.setItem('educapro_chat', JSON.stringify(chatHistory));
+        loadChat();
+    } catch(e) { 
+        load.innerText = "Erro de conexão. Verifique sua chave ou internet."; 
+    }
+}
+
+        
 
         function toggleItem(item, status) {
             progresso[item] = status;
