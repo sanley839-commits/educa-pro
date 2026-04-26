@@ -209,9 +209,9 @@ async function askAI() {
         localStorage.setItem('educapro_chat', JSON.stringify(chatHistory));
         loadChat();
     } catch(e) { 
-        load.innerText = "Erro de conexão. Verifique sua chave ou internet."; 
+    load.innerText = "Erro Técnico: " + e.message; 
     }
-}
+    
 
         
 
