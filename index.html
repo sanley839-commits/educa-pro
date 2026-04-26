@@ -19,8 +19,12 @@
         .orbit:nth-child(2) { transform: rotateX(70deg) rotateY(20deg); animation-duration: 2.5s; }
         .orbit:nth-child(3) { transform: rotateX(-70deg) rotateY(20deg); animation-duration: 4s; }
         .electron { width: 6px; height: 6px; background: var(--ifce); border-radius: 50%; position: absolute; top: 50%; box-shadow: 0 0 8px var(--ifce); }
-        @keyframes rotate-orbit { from { transform: rotateX(70deg) rotateZ(0deg); } to { transform: rotateX(70deg) rotateZ(360deg); } }
         
+        @keyframes rotate-orbit { 
+            from { transform: rotateX(70deg) rotateZ(0deg); } 
+            to { transform: rotateX(70deg) rotateZ(360deg); } 
+        }
+
         .trilha-card { animation: fadeIn 0.5s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -49,6 +53,7 @@
 
     <script>
         const API_KEY = "Gsk_F4poWgDj2lue56bdS5JvWGdyb3FY7mPqIy0tOeBgdilDA9h3RC8b";
+        
         const EDITAL_AREAS = {
             "Língua Portuguesa": ["Interpretação de Texto", "Acentuação", "Sintaxe", "Concordância"],
             "Matemática": ["Razão e Proporção", "Equações", "Geometria Plana", "Porcentagem"]
@@ -73,7 +78,7 @@
                     <div class="flex-1 flex flex-col bg-white rounded-3xl shadow-sm border overflow-hidden min-h-[400px]">
                         <div id="chat-box" class="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-50/50 text-sm"></div>
                         <div class="p-3 bg-white border-t flex gap-2">
-                            <input id="user-input" type="text" class="flex-1 p-4 bg-gray-100 rounded-2xl outline-none" placeholder="Tire sua dúvida...">
+                            <input id="user-input" type="text" class="flex-1 p-4 bg-gray-100 rounded-2xl outline-none text-sm" placeholder="Pergunte algo...">
                             <button onclick="askAI()" class="bg-ifce text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-md"><i class="fas fa-paper-plane"></i></button>
                         </div>
                     </div>
@@ -86,7 +91,7 @@
                         <div>
                             <h3 class="text-[10px] font-black text-gray-400 mb-3 uppercase border-b pb-1">${area}</h3>
                             <div class="grid gap-2">${EDITAL_AREAS[area].map(item => `
-                                <div onclick="abrirRoteiro('${item}')" class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-gray-100 cursor-pointer hover:border-ifce transition-all">
+                                <div onclick="abrirRoteiro('${item}')" class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-gray-100 cursor-pointer">
                                     <div class="flex items-center gap-3">
                                         <input type="checkbox" onclick="event.stopPropagation(); toggleItem('${item}', this.checked)" ${progresso[item]?'checked':''} class="w-5 h-5 accent-green-600">
                                         <span class="text-sm font-bold text-gray-700">${item}</span>
@@ -113,26 +118,22 @@
             const container = document.getElementById('roteiro-container');
             container.innerHTML = `
                 <div class="mt-6 p-6 bg-green-50 rounded-3xl border-2 border-ifce trilha-card">
-                    <h4 class="font-black text-sm uppercase mb-4">Passos para: ${item}</h4>
-                    <ul class="space-y-3 text-xs font-medium text-gray-600">
-                        <li class="flex gap-2"><b>1.</b> Estude a teoria base por 30 min.</li>
-                        <li class="flex gap-2"><b>2.</b> Faça 10 questões de provas anteriores.</li>
-                        <li class="flex gap-2"><b>3.</b> Explique o tema para o Professor Átomo.</li>
-                    </ul>
-                    <button onclick="perguntarSobre('${item}')" class="w-full mt-4 bg-gray-800 text-white p-3 rounded-xl font-bold text-[10px] uppercase">Dúvida rápida sobre este tema</button>
+                    <h4 class="font-black text-sm uppercase mb-4">Plano: ${item}</h4>
+                    <p class="text-xs text-gray-600 mb-4">Clique abaixo para pedir uma explicação personalizada ao Átomo.</p>
+                    <button onclick="perguntarSobre('${item}')" class="w-full bg-gray-800 text-white p-3 rounded-xl font-bold text-[10px] uppercase tracking-widest">Pedir Resumo ao Átomo</button>
                 </div>`;
             container.scrollIntoView({behavior: 'smooth'});
         }
 
         function perguntarSobre(item) {
             renderTab('ia');
-            document.getElementById('user-input').value = `Pode me explicar os pontos mais importantes de ${item} para o IFCE?`;
+            document.getElementById('user-input').value = `Pode me explicar ${item} focado no IFCE?`;
         }
 
         function loadChat() {
             const box = document.getElementById('chat-box');
             if(!box) return;
-            box.innerHTML = chatHistory.length === 0 ? '<p class="text-center text-gray-300 text-[10px] mt-10 font-bold uppercase">Átomo aguardando sua dúvida...</p>' : '';
+            box.innerHTML = chatHistory.length === 0 ? '<p class="text-center text-gray-300 text-[10px] mt-10 font-bold uppercase">Átomo aguardando...</p>' : '';
             chatHistory.forEach(msg => {
                 const isUser = msg.role === 'user';
                 box.innerHTML += `<div class="flex ${isUser ? 'justify-end' : 'justify-start'}">
@@ -158,8 +159,14 @@
             try {
                 const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + API_KEY },
-                    body: JSON.stringify({ model: "llama3-8b-8192", messages: [{role: "system", content: "Professor Átomo, especialista IFCE."}, ...chatHistory.slice(-4)] })
+                    headers: { 
+                        "Content-Type": "application/json", 
+                        "Authorization": "Bearer " + API_KEY 
+                    },
+                    body: JSON.stringify({ 
+                        model: "llama3-8b-8192", 
+                        messages: [{role: "system", content: "Professor Átomo IFCE."}, ...chatHistory.slice(-4)] 
+                    })
                 });
                 const data = await res.json();
                 load.remove();
